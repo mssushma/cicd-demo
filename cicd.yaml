@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
 Resources:
 
   DemoSG:
@@ -8,7 +13,6 @@ Resources:
       GroupDescription: Demo Security Group
 
       SecurityGroupIngress:
-
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -16,7 +20,12 @@ Resources:
 
   DemoInstance:
     Type: AWS::EC2::Instance
-
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0f58b397bc5c1f2e8
+      ImageId: !Ref LatestAmiId
+      SecurityGroupIds:
+        - !Ref DemoSG
+
+Outputs:
+  InstanceId:
+    Value: !Ref DemoInstance
