@@ -31,7 +31,7 @@ jobs:
       - name: Deploy CloudFormation
         run: |
           aws cloudformation deploy \
-            --template-file template.yaml \
+            --template-file cicd.yaml \
             --stack-name cicd-demo-stack
 
       - name: Verify Stack
