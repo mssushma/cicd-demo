@@ -6,35 +6,44 @@ on:
       - main
 
 jobs:
-  deploy:
 
+  build:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Build Validation
+        run: |
+          echo "Validating template"
+          cat cicd.yaml
 
-      - name: Build
-        run: echo "Build Successful"
+  test:
+    needs: build
+    runs-on: ubuntu-latest
 
-      - name: Test
-        run: echo "Tests Successful"
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Template Test
+        run: |
+          grep "AWS::EC2::Instance" cicd.yaml
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy CloudFormation
+      - name: Deploy Stack
         run: |
           aws cloudformation deploy \
             --template-file cicd.yaml \
-            --stack-name cicd-demo-stack
-
-      - name: Verify Stack
-        run: |
-          aws cloudformation describe-stacks \
             --stack-name cicd-demo-stack
